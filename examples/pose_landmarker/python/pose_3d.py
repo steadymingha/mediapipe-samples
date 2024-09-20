@@ -2,8 +2,7 @@ import cv2
 import mediapipe as mp
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-# import os
-# os.environ['DISPLAY'] = '0'
+
 class PoseEstimator:
     def __init__(self):
         self.mp_pose = mp.solutions.pose
@@ -23,7 +22,8 @@ class PoseEstimator:
     def process_video(self, video_path):
         fig = plt.figure()
         ax = fig.add_subplot(111 , projection = '3d')
-        ax.view_init(elev=0, azim=-45)  # Set the initial view
+        # ax.view_init(elev=0, azim=-45)  # Set the initial view
+        ax.view_init(elev=128, azim=90)  # Set the initial view
 
         cap = cv2.VideoCapture(video_path)
 
@@ -65,8 +65,7 @@ class PoseEstimator:
             ax.set_ylabel('Y-axis')
             ax.set_zlabel('Z-axis')
 
-            # ax.view_init(elev=45, azim=45)  # Set the initial view
-            
+
             # Show plot
             plt.pause(0.1)
             plt.show(block=False)
@@ -76,13 +75,6 @@ class PoseEstimator:
         cap.release()
         cv2.destroyAllWindows()
     
-    
-
-
-
-
-
-
 
     def process_image(self, image_path):
         fig = plt.figure()

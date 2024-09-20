@@ -48,7 +48,6 @@ class Keypoints:
 
         self.keypoints = np.vstack([self.keypoints, np.array(synthetic_keypoints)])
         self.names += synthetic_names
-        test = 0
 
 
     def normalize(self, threshold=0.5):
@@ -130,7 +129,7 @@ class FeatureExtractor:
             for key in self.features.keys():
                 self.smooth(key)
 
-"""## 3. Reference"""
+
 
 WORKOUT = {
     'lateral-burpee-over-dumbbell': {'reference': 'oyn3r70PzQ0_21', 'feature': 'shoulder_to_ankle_height'},
@@ -149,16 +148,17 @@ if __name__ == '__main__':
         keypoints = Keypoints(keypoints)
         reference_feature.update(keypoints)
 
-    sns.lineplot(reference_feature.get(feature_name))
+    # sns.lineplot(reference_feature.get(feature_name))
 
 
     inference_names = [fp.split('/')[-1].rstrip('.npy') for fp in glob(f'/home/user/gdrive/crossfit/data/sequence/{workout}/*.npy') if reference_name not in fp]
 
     # inference_name = inference_names[2]
     inference_name = inference_names[1]
+    # inference_sequence = np.load(f'/home/user/gdrive/crossfit/data/sequence/{workout}/{inference_name}.npy')
     inference_sequence = np.load(f'/home/user/gdrive/crossfit/data/sequence/{workout}/{inference_name}.npy')
 
-
+    zscore_list = [] ## remove in the future
     counts, crosses = [], []
     direction = 0 # 1 for up, -1 for down
 
@@ -174,6 +174,7 @@ if __name__ == '__main__':
         if abs(zscore) < 1:
             continue
 
+        zscore_list.append(zscore) ## remove in the future
         if direction == 0:
             direction = 1 if zscore < 0 else -1
         elif (zscore * direction) > 0:
@@ -185,28 +186,38 @@ if __name__ == '__main__':
     print(len(counts))
     print(counts)
 
-    video_path = f'/home/user/gdrive/crossfit/data/workout/{workout}/{inference_name}.mp4'
+    plt.plot(zscore_list,'.') ## remove in the future
+    plt.show() ## remove in the future
 
-    cap = cv2.VideoCapture(video_path)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    test = 0
 
-    frames = []
-    count = 0
-    for i in range(num_frames):
-        if i in counts:
-            count += 1
 
-        ret, frame = cap.read()
-        if not ret:
-            break
 
-        # cv2.putText(frame, f'count: {count}', (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-        frames.append(frame)
 
-    # save_path = video_path.replace('/workout/', '/result/')
-    # os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    # save_video(frames, save_path)
+
+    # ## visualization
+    # video_path = f'/home/user/gdrive/crossfit/data/workout/{workout}/{inference_name}.mp4'
+    #
+    # cap = cv2.VideoCapture(video_path)
+    # fps = cap.get(cv2.CAP_PROP_FPS)
+    # num_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    #
+    # frames = []
+    # count = 0
+    # for i in range(num_frames):
+    #     if i in counts:
+    #         count += 1
+    #
+    #     ret, frame = cap.read()
+    #     if not ret:
+    #         break
+    #
+    #     # cv2.putText(frame, f'count: {count}', (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+    #     frames.append(frame)
+    #
+    # # save_path = video_path.replace('/workout/', '/result/')
+    # # os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    # # save_video(frames, save_path)
 
 
 

@@ -33,9 +33,10 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     # data = np.load('/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/Deu-_GZLE9w_09.npy')
-    video_path = "/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/241_001_dumbbell-snatch-left_009.mp4"
+    # video_path = "/home/user/gdrive/crossfit/data/rounds/241_001_dumbbell-snatch-left_009.mp4"
+    video_path = "/home/user/gdrive/crossfit/data/rounds/241_002_dumbbell-snatch-left_009.mp4"
+    # video_path = "/home/user/gdrive/crossfit/data/reps/241_003_dumbbell-snatch-left_009_001.mp4"
     workout = 'dumbbell-snatch-left'
-
 
     ## reference
     feature_name = WORKOUT[workout]['feature']
@@ -49,32 +50,75 @@ if __name__ == '__main__':
     mean, std = reference_feature.stat(feature_name)
 
 
+
     ## call atheletes
     mp = PoseEstimator()
     cap = cv2.VideoCapture(video_path)
 
     inference_feature = FeatureExtractor()
 
-    counts, cross_flag, direction = 0, 0, 0
+    ##############################
+    # 플롯 초기화
+    plt.ion()  # 대화형 모드 켜기
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
+    img_plot = ax1.imshow(np.zeros((480, 640, 3), dtype=np.uint8))
+    line, = ax2.plot([], [], 'r.')
+    ax2.set_xlim(0, 500)
+    ax2.set_ylim(-5, 5)
+    ax2.set_title('Z-Score')
+    ax2.set_xlabel('Frame')
+    ax2.set_ylabel('Z-Score')
+    ax2.grid(True)
+    frame_count = 0
+    text_counts = ax1.text(10, 30, '', color='white', fontsize=12, fontweight='bold')
+    
+    ################################
+    counts = 0
+    cross_flag = 0
+    direction = 0
+    delta_zscore, pre_zscore = 0, 0
+    zsdelta_list, zscore_list = [], []  ## remove in the future
     while cap.isOpened():
         ret, frame_bgr = cap.read()
         if not ret: break
 
         frame = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         results = mp.pose.process(frame_bgr)
-        if results.pose_landmarks is None: continue
-
+        if results.pose_landmarks is None:
+            continue
 
         coco_keypoints = mp2coco_keypoints(results.pose_landmarks)
-
         keypoints = Keypoints(coco_keypoints)
         inference_feature.update(keypoints, smoothen=True)
 
         feat = inference_feature.get(feature_name)[-1]
         zscore = (feat - mean) / std
 
+        if pre_zscore == 0: pre_zscore = zscore
+        delta_zscore = zscore - pre_zscore
+        pre_zscore = zscore
+
         # if abs(zscore) < 1:
         #     continue
+
+        ####################################
+        zsdelta_list.append(delta_zscore)
+        zscore_list.append(zscore)
+        frame_count += 1
+
+        img_plot.set_array(frame)
+        line.set_data(range(len(zscore_list)), zscore_list)
+        ax2.set_xlim(max(0, frame_count - 100), frame_count)
+
+        text_counts.set_text(f'Counts: {counts}')
+
+        plt.draw()
+        plt.pause(0.05)
+
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        ####################################
 
         ## counting
         if direction == 0:
@@ -82,53 +126,28 @@ if __name__ == '__main__':
         elif (zscore * direction) > 0:
             cross_flag += 1
             direction *= -1
-            if len(cross_flag) % 2 != 0:
+            if cross_flag % 2 != 0:
                 counts += 1
                 # counts.append(i)
 
-
     cap.release()
     cv2.destroyAllWindows()
+    plt.ioff()  # 대화형 모드 끄기
+    plt.show()
 
-
-
-
-
-
-
-
-
-
-
-        
-
-
-    # inference_sequence = np.array(inference_sequence)
-
-
-    ## motion verification 
-
-
-
+    plt.figure(figsize=(12, 6))
+    plt.plot(zsdelta_list)
+    plt.title('Z-Score Over Time')
+    plt.xlabel('Frame')
+    plt.ylabel('Z-Score')
+    plt.grid(True)
+    plt.show()
 
 
 
 
     ## counting
     # inference_feature = FeatureExtractor()
-
-
-
-
-
-
-
-
-# npy가 MEDIA PIPE 가 아니고 COCO를 따르고있는지 확인중 -> 안따름. media pipe index로 변환할것
-
-
-
-
 
 
 
