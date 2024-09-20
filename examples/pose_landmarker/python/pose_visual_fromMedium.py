@@ -1,7 +1,10 @@
+
 import cv2
 import mediapipe as mp
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import os
+# os.environ['DISPLAY'] = '0'
 
 class PoseEstimator:
     def __init__(self):
@@ -118,4 +121,4 @@ class PoseEstimator:
 # video_path = "../data/rounds/241_003_dumbbell-snatch-right_009.mp4"
 pose = PoseEstimator()
 # pose.process_video(video_path)
-pose.process_image('image.jpg')
+pose.process_image('/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/image.jpg')
