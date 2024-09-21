@@ -8,7 +8,7 @@ from rtmlib import Body
 from tqdm import tqdm
 
 import matplotlib.pyplot as plt
-from pose_tools import Sort
+# from pose_tools import Sort
 #%% md
 # ## 2. Funcs
 #%%
@@ -162,7 +162,7 @@ def inference(model, image, id=1):
     #             (0, 255, 0), 2)
 
     # bbox = bbox[None, ...]
-    kps, scores = model.pose_model(image, bboxes=bbox)#es)
+    kps, scores = model.pose_model(image, bboxes=bboxes)
     kps, scores = kps[0], scores[0][:, None]
     kps = np.concatenate([kps, scores], axis=1)
     return kps
@@ -200,12 +200,12 @@ if __name__ == '__main__':
     config_dict = {}
     #%%
     # ref_path = '../data/rounds/241_003_dumbbell-snatch-left_009.mp4'
-    ref_path = '../gmj/GMJ_24.1_burpee_to_L_db_burpee_R_db.mp4'
+    ref_path = '/home/user/gdrive/crossfit/data/workout/dumbbell-snatch-left/oyn3r70PzQ0_21.mp4'
     # ref_path = '../gmj/GMJ_24.1_burpee_21.mp4'
     cap = cv2.VideoCapture(ref_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
 
-    sort = Sort()
+    # sort = Sort()
     metrics = Metrics()
     track = [[] for _ in range(metrics.lenMetrics)]
     lpftrack = [SmoothFilter() for _ in range(metrics.lenMetrics)]
@@ -241,15 +241,12 @@ if __name__ == '__main__':
     # plt.show()
     # plt.plot(statistics["mean"])
     #%%
-    motionMetric
+
     #%% md
     # ## 4. Inference
     #%%
-    # inference_path = '../gmj/00.mp4'
-    # inference_path = 'data/rounds/241_004_dumbbell-snatch-left_015.mp4'
-    # inference_path = 'data/rounds/241_005_dumbbell-snatch-left_009.mp4'
-    # inference_path = '../crossfit/data/rounds/241_006_dumbbell-snatch-left_009.mp4'
-    inference_path = '../gmj/GMJ_24.1_L_db_snatch_21.mp4'
+
+    inference_path = "/home/user/gdrive/crossfit/data/rounds/241_002_dumbbell-snatch-left_009.mp4"
     #%%
     cap = cv2.VideoCapture(inference_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -257,7 +254,7 @@ if __name__ == '__main__':
 
     #%%
     windowSize = 10
-    sort = Sort()
+    # sort = Sort()
     metrics = Metrics()
     track = [[] for _ in range(len(motionMetric))]
     lpftrack = [SmoothFilter() for _ in range(len(motionMetric))]
@@ -299,4 +296,6 @@ if __name__ == '__main__':
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0XFF == ord('q'):
             break
+    plt.plot(zc.y)
+    plt.show()
     #%%

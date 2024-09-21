@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 mediapipe = "*"
 seaborn = "*"
+rtmlib = "*"
+tqdm = "*"
+onnxruntime = "*"
 
 [dev-packages]
 

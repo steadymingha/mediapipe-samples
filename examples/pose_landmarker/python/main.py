@@ -62,10 +62,10 @@ if __name__ == '__main__':
 
         frame = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         results = mp.pose.process(frame_bgr)
-        if results.pose_landmarks is None: continue
+        if results.pose_world_landmarks is None:
+            continue
 
-
-        coco_keypoints = mp2coco_keypoints(results.pose_landmarks)
+        coco_keypoints = mp2coco_keypoints(results.pose_world_landmarks)
 
         keypoints = Keypoints(coco_keypoints)
         inference_feature.update(keypoints, smoothen=True)

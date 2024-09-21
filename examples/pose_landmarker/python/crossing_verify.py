@@ -34,8 +34,8 @@ if __name__ == '__main__':
 
     # data = np.load('/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/Deu-_GZLE9w_09.npy')
     # video_path = "/home/user/gdrive/crossfit/data/rounds/241_001_dumbbell-snatch-left_009.mp4"
-    video_path = "/home/user/gdrive/crossfit/data/rounds/241_002_dumbbell-snatch-left_009.mp4"
-    # video_path = "/home/user/gdrive/crossfit/data/reps/241_003_dumbbell-snatch-left_009_001.mp4"
+    # video_path = "/home/user/gdrive/crossfit/data/rounds/241_002_dumbbell-snatch-left_009.mp4"
+    video_path = "/home/user/gdrive/crossfit/data/reps/241_003_dumbbell-snatch-left_009_001.mp4"
     workout = 'dumbbell-snatch-left'
 
     ## reference
@@ -84,10 +84,11 @@ if __name__ == '__main__':
 
         frame = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         results = mp.pose.process(frame_bgr)
-        if results.pose_landmarks is None:
+        if results.pose_world_landmarks is None:
             continue
 
-        coco_keypoints = mp2coco_keypoints(results.pose_landmarks)
+        coco_keypoints = mp2coco_keypoints(results.pose_world_landmarks)
+        # coco_keypoints = mp2coco_keypoints(results.pose_landmarks)
         keypoints = Keypoints(coco_keypoints)
         inference_feature.update(keypoints, smoothen=True)
 
@@ -133,10 +134,18 @@ if __name__ == '__main__':
     cap.release()
     cv2.destroyAllWindows()
     plt.ioff()  # 대화형 모드 끄기
-    plt.show()
+    plt.show(block=False)
 
     plt.figure(figsize=(12, 6))
     plt.plot(zsdelta_list)
+    plt.title('Z-Score Delta')
+    plt.xlabel('Frame')
+    plt.ylabel('Z-Score')
+    plt.grid(True)
+    plt.show(block=False)
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(zscore_list)
     plt.title('Z-Score Over Time')
     plt.xlabel('Frame')
     plt.ylabel('Z-Score')

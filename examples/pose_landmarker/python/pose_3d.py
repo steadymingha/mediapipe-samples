@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 class PoseEstimator:
     def __init__(self):
@@ -22,8 +23,19 @@ class PoseEstimator:
     def process_video(self, video_path):
         fig = plt.figure()
         ax = fig.add_subplot(111 , projection = '3d')
-        # ax.view_init(elev=0, azim=-45)  # Set the initial view
         ax.view_init(elev=128, azim=90)  # Set the initial view
+
+
+        fig_yz, ax_yz = plt.subplots(figsize=(6, 6))
+        scatter_yz = ax_yz.scatter([], [], c='b', s=10)
+        ax_yz.invert_yaxis() 
+
+
+
+
+
+
+
 
         cap = cv2.VideoCapture(video_path)
 
@@ -41,7 +53,7 @@ class PoseEstimator:
             ax.clear()
 
             if results.pose_landmarks:
-                landmarks = results.pose_landmarks.landmark
+                landmarks = results.pose_world_landmarks.landmark
                 x = [landmark.x for landmark in landmarks]
                 y = [landmark.y for landmark in landmarks]
                 z = [landmark.z for landmark in landmarks]
@@ -58,9 +70,10 @@ class PoseEstimator:
                         'r-'
                     )
 
-            ax.set_xlim(0, 1)
-            ax.set_ylim(0.1, 1)
-            ax.set_zlim(0, 1)
+            # ax.set_xlim(0, 1)
+            # ax.set_ylim(0.1, 1)
+            # ax.set_zlim(0, 1)
+            
             ax.set_xlabel('X-axis')
             ax.set_ylabel('Y-axis')
             ax.set_zlabel('Z-axis')
@@ -69,11 +82,48 @@ class PoseEstimator:
             # Show plot
             plt.pause(0.1)
             plt.show(block=False)
+            
+            # landmarks에서 y와 z 값 추출
+            # landmarks = results.pose_landmarks.landmark
+            # y = [landmark.y for landmark in landmarks]
+            # z = [landmark.z for landmark in landmarks]
+
+            # y-z 플롯 업데이트
+            ax_yz.cla() 
+                        # ax_yz.set_xlim(0, 1)  # z 값의 범위
+            ax_yz.set_ylim(-1, 1)  # y 값의 범위
+            ax_yz.set_title('Y-Z Movement')
+            ax_yz.set_xlabel('Z')
+            ax_yz.set_ylabel('Y')
+            ax_yz.grid(True)
+            ax_yz.invert_yaxis() 
+            scatter_yz.set_offsets(np.c_[z, y])
+
+            # 연결선 그리기
+            for connection in self.mp_pose.POSE_CONNECTIONS:
+                start_idx, end_idx = connection
+                ax_yz.plot(
+                    [z[start_idx], z[end_idx]],
+                    [y[start_idx], y[end_idx]],
+                    'r-'
+                )
+
+            plt.figure(fig.number)  # 메인 플롯 활성화
+            plt.draw()
+            plt.figure(fig_yz.number)  # y-z 플롯 활성화
+            plt.draw()
+            plt.pause(0.05)  # 플롯 업데이트를 위한 짧은 일시 정지
+
+
+
 
             # if cv2.waitKey(1) & 0xFF == ord('q'):
             #     break
         cap.release()
         cv2.destroyAllWindows()
+
+
+
     
 
     def process_image(self, image_path):
