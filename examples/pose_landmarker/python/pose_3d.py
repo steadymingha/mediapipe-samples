@@ -69,6 +69,8 @@ class PoseEstimator:
                         [z[start_idx], z[end_idx]],
                         'r-'
                     )
+            else:
+                continue
 
             # ax.set_xlim(0, 1)
             # ax.set_ylim(0.1, 1)
@@ -90,14 +92,16 @@ class PoseEstimator:
 
             # y-z 플롯 업데이트
             ax_yz.cla() 
-                        # ax_yz.set_xlim(0, 1)  # z 값의 범위
-            ax_yz.set_ylim(-1, 1)  # y 값의 범위
+            ax_yz.set_xlim(-1, 1)  # z 값의 범위
+            ax_yz.set_ylim(-1.25, 1)  # y 값의 범위
             ax_yz.set_title('Y-Z Movement')
             ax_yz.set_xlabel('Z')
             ax_yz.set_ylabel('Y')
             ax_yz.grid(True)
             ax_yz.invert_yaxis() 
             scatter_yz.set_offsets(np.c_[z, y])
+
+            ax_yz.scatter(z,y)
 
             # 연결선 그리기
             for connection in self.mp_pose.POSE_CONNECTIONS:
@@ -171,8 +175,11 @@ class PoseEstimator:
 
 if __name__ == '__main__':
     import os
-    scirpt_dir = (os.path.dirname(os.path.abspath(__file__)))
-    video_path = "241_001_dumbbell-snatch-left_009.mp4"
+    gdrive = '/home/user/gdrive/crossfit'
+    # scirpt_dir = (os.path.dirname(os.path.abspath(__file__)))
+    video_path = os.path.join(gdrive, 'data/rounds/241_001_dumbbell-snatch-left_009.mp4')
+    # video_path = os.path.join(gdrive, 'data/workout/dumbbell-snatch-right/Deu-_GZLE9w_09.mp4')
+    #video_path = "241_001_dumbbell-snatch-left_009.mp4"
     pose = PoseEstimator()
-    pose.process_video(os.path.join(scirpt_dir, video_path))
+    pose.process_video(video_path)
     # pose.process_image('image.jpg')

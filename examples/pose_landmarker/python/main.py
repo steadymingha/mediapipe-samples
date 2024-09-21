@@ -10,7 +10,7 @@ KEYPOINT_NAMES = [
     'left_thumb', 'right_thumb', 'left_hip', 'right_hip', 'left_knee', 'right_knee', 'left_ankle', 'right_ankle',
     'left_heel', 'right_heel', 'left_foot_index', 'right_foot_index'
 ]
-
+ # knee hip shoulder elbow wrist head ankle
 MEDIAPIPE_TO_COCO = {name: KEYPOINT_NAMES.index(name) for name in COCO_KEYPOINT_NAMES}
 
 WORKOUT = {
@@ -28,6 +28,23 @@ def mp2coco_keypoints(results):
         coco_keypoints.append([landmark.x, landmark.y, landmark.z])
     return np.array(coco_keypoints)
 
+def angle_between(joint_name1, joint_name2, joint_name3, kpts):
+    joint1 = kpts[COCO_KEYPOINT_NAMES.index(joint_name1)]
+    joint2 = kpts[COCO_KEYPOINT_NAMES.index(joint_name2)]
+    joint3 = kpts[COCO_KEYPOINT_NAMES.index(joint_name3)]
+
+    vector1 = np.array(joint1) - np.array(joint2)
+    vector2 = np.array(joint3) - np.array(joint2)
+    
+    unit_vector1 = vector1 / np.linalg.norm(vector1)
+    unit_vector2 = vector2 / np.linalg.norm(vector2)
+    
+    dot_product = np.dot(unit_vector1, unit_vector2)
+    angle = np.arccos(dot_product)
+    
+    return np.degrees(angle)
+
+
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -35,7 +52,6 @@ if __name__ == '__main__':
     # data = np.load('/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/Deu-_GZLE9w_09.npy')
     video_path = "/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/241_001_dumbbell-snatch-left_009.mp4"
     workout = 'dumbbell-snatch-left'
-
 
     ## reference
     feature_name = WORKOUT[workout]['feature']
@@ -67,6 +83,21 @@ if __name__ == '__main__':
 
         coco_keypoints = mp2coco_keypoints(results.pose_world_landmarks)
 
+        l_knee = angle_between('left_ankle', 'left_knee', 'left_hip', coco_keypoints)
+        r_knee = angle_between('right_ankle', 'right_knee', 'right_hip', coco_keypoints)
+
+        print("left_knee: ", l_knee, "right_knee: ", r_knee)
+
+        l_hip = angle_between('left_knee', 'left_hip', 'left_shoulder', coco_keypoints)
+        r_hip = angle_between('right_knee', 'right_hip', 'right_shoulder', coco_keypoints)
+
+        print("left_hip: ", l_hip, "right_hip: ", r_hip)
+
+
+
+
+
+
         keypoints = Keypoints(coco_keypoints)
         inference_feature.update(keypoints, smoothen=True)
 
@@ -82,7 +113,7 @@ if __name__ == '__main__':
         elif (zscore * direction) > 0:
             cross_flag += 1
             direction *= -1
-            if len(cross_flag) % 2 != 0:
+            if cross_flag % 2 != 0:
                 counts += 1
                 # counts.append(i)
 
@@ -124,7 +155,7 @@ if __name__ == '__main__':
 
 
 
-# npy가 MEDIA PIPE 가 아니고 COCO를 따르고있는지 확인중 -> 안따름. media pipe index로 변환할것
+
 
 
 

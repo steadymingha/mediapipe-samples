@@ -29,13 +29,31 @@ def mp2coco_keypoints(results):
     return np.array(coco_keypoints)
 
 
+def angle_between(joint_name1, joint_name2, joint_name3, kpts):
+    joint1 = kpts[COCO_KEYPOINT_NAMES.index(joint_name1)]
+    joint2 = kpts[COCO_KEYPOINT_NAMES.index(joint_name2)]
+    joint3 = kpts[COCO_KEYPOINT_NAMES.index(joint_name3)]
+
+    vector1 = np.array(joint1) - np.array(joint2)
+    vector2 = np.array(joint3) - np.array(joint2)
+
+    unit_vector1 = vector1 / np.linalg.norm(vector1)
+    unit_vector2 = vector2 / np.linalg.norm(vector2)
+
+    dot_product = np.dot(unit_vector1, unit_vector2)
+    angle = np.arccos(dot_product)
+
+    return np.degrees(angle)
+
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
+    gdrive = "/home/user/gdrive"
     # data = np.load('/home/user/Study/crossfit/mediapipe-samples/examples/pose_landmarker/python/Deu-_GZLE9w_09.npy')
-    # video_path = "/home/user/gdrive/crossfit/data/rounds/241_001_dumbbell-snatch-left_009.mp4"
+    video_path = "/home/user/gdrive/crossfit/data/rounds/241_001_dumbbell-snatch-left_009.mp4"
     # video_path = "/home/user/gdrive/crossfit/data/rounds/241_002_dumbbell-snatch-left_009.mp4"
-    video_path = "/home/user/gdrive/crossfit/data/reps/241_003_dumbbell-snatch-left_009_001.mp4"
+    # video_path = f"{gdrive}/crossfit/data/reps/241_003_dumbbell-snatch-left_009_001.mp4"
     workout = 'dumbbell-snatch-left'
 
     ## reference
@@ -71,8 +89,11 @@ if __name__ == '__main__':
     ax2.grid(True)
     frame_count = 0
     text_counts = ax1.text(10, 30, '', color='white', fontsize=12, fontweight='bold')
-    
+    text_hip_angle = ax1.text(400, 300, '', color='white', fontsize=9, fontweight='bold')
+    text_knee_angle = ax1.text(400, 330, '', color='white', fontsize=9, fontweight='bold')
     ################################
+
+
     counts = 0
     cross_flag = 0
     direction = 0
@@ -89,6 +110,28 @@ if __name__ == '__main__':
 
         coco_keypoints = mp2coco_keypoints(results.pose_world_landmarks)
         # coco_keypoints = mp2coco_keypoints(results.pose_landmarks)
+
+        l_knee = angle_between('left_ankle', 'left_knee', 'left_hip', coco_keypoints)
+        r_knee = angle_between('right_ankle', 'right_knee', 'right_hip', coco_keypoints)
+
+        print("left_knee: ", l_knee, "right_knee: ", r_knee)
+
+        l_hip = angle_between('left_knee', 'left_hip', 'left_shoulder', coco_keypoints)
+        r_hip = angle_between('right_knee', 'right_hip', 'right_shoulder', coco_keypoints)
+
+        print("left_hip: ", l_hip, "right_hip: ", r_hip)
+        text_knee_angle.set_text(f'{l_knee:.2f}, {r_knee:.2f}')
+        text_hip_angle.set_text(f'{l_hip:.2f}, {r_hip:.2f}')
+
+
+
+
+
+
+
+
+
+
         keypoints = Keypoints(coco_keypoints)
         inference_feature.update(keypoints, smoothen=True)
 
@@ -114,7 +157,7 @@ if __name__ == '__main__':
         text_counts.set_text(f'Counts: {counts}')
 
         plt.draw()
-        plt.pause(0.05)
+        plt.pause(0.5)
 
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -136,13 +179,13 @@ if __name__ == '__main__':
     plt.ioff()  # 대화형 모드 끄기
     plt.show(block=False)
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(zsdelta_list)
-    plt.title('Z-Score Delta')
-    plt.xlabel('Frame')
-    plt.ylabel('Z-Score')
-    plt.grid(True)
-    plt.show(block=False)
+    # plt.figure(figsize=(12, 6))
+    # plt.plot(zsdelta_list)
+    # plt.title('Z-Score Delta')
+    # plt.xlabel('Frame')
+    # plt.ylabel('Z-Score')
+    # plt.grid(True)
+    # plt.show(block=False)
 
     plt.figure(figsize=(12, 6))
     plt.plot(zscore_list)
